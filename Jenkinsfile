@@ -43,7 +43,7 @@ stage('Push Docker Image to Docker Hub') {
                 ]]
             ) {
                 // Login to Docker Registry and push the image
-                docker.withRegistry('https://registry.hub.docker.com', "${DOCKER_USERNAME}:${DOCKER_PASSWORD}") {
+                docker.withRegistry('', "${DOCKER_USERNAME}:${DOCKER_PASSWORD}") {
                     dockerImage.push()
                 }
             }
