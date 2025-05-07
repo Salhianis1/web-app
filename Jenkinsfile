@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         registry = 'salhianis20/web-app'
-        registryCredential = 'dockerhub-id'
         dockerImage = 'web-app'
     }
 
