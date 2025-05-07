@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         registry = 'salhianis20/web-app'
-        dockerImage = 'web-app'
+        registryCredential = 'dockerhub-id'
     }
 
     stages {
@@ -17,48 +17,44 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("${registry}:${BUILD_NUMBER}")
+                    dockerImage = docker.build("${env.registry}:${env.BUILD_NUMBER}")
                 }
             }
         }
 
-stage('Push Docker Image to Docker Hub') {
-    steps {
-        script {
-            // Fetch Docker credentials from Vault
-            withVault(
-                configuration: [
-                    disableChildPoliciesOverride: false,
-                    timeout: 60,
-                    vaultCredentialId: 'vault-cred',
-                    vaultUrl: 'http://127.0.0.1:8200'
-                ],
-                vaultSecrets: [[
-                    path: 'secret/dockercred',
-                    secretValues: [
-                        [envVar: 'DOCKER_USERNAME', vaultKey: 'username'],
-                        [envVar: 'DOCKER_PASSWORD', vaultKey: 'pwd']
-                    ]
-                ]]
-            ) {
-                sh 'echo "$username"'
-                // Login to Docker Registry and push the image
-                docker.withRegistry('', "${DOCKER_USERNAME}:${DOCKER_PASSWORD}") {
-                    dockerImage.push()
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                script {
+                    withVault(
+                        configuration: [
+                            vaultCredentialId: 'vault-cred',
+                            vaultUrl: 'http://127.0.0.1:8200',
+                            timeout: 60,
+                            disableChildPoliciesOverride: false
+                        ],
+                        vaultSecrets: [[
+                            path: 'secret/dockercred',
+                            secretValues: [
+                                [envVar: 'DOCKER_USERNAME', vaultKey: 'username'],
+                                [envVar: 'DOCKER_PASSWORD', vaultKey: 'pwd']
+                            ]
+                        ]]
+                    ) {
+                        // Login and push
+                        sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+                        dockerImage.push()
+                        sh 'docker logout'
+                    }
                 }
             }
         }
-    }
-}
-
 
         stage('Run Container') {
             steps {
                 script {
-                    // Stop and remove any running container with the same name, then run the new one
                     sh """
                         docker rm -f web-app-container || true
-                        docker run -d --name web-app-container -p 8084:80 ${registry}:${BUILD_NUMBER}
+                        docker run -d --name web-app-container -p 8084:80 ${env.registry}:${env.BUILD_NUMBER}
                     """
                 }
             }
