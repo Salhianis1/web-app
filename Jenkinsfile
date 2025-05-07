@@ -27,7 +27,7 @@ pipeline {
             steps {
                 script {
                     // Fetch Docker credentials from Vault
-                    withVault([vaultSecrets: [[path: "${env.VAULT_SECRET_PATH}", secretValues: [
+                    withVault([vaultSecrets: [[path: "secret/dockercred}", secretValues: [
                         [envVar: 'DOCKER_USERNAME', vaultKey: 'username'],
                         [envVar: 'DOCKER_PASSWORD', vaultKey: 'password']
                     ]]]]) {
