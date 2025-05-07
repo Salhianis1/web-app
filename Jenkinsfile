@@ -42,6 +42,7 @@ stage('Push Docker Image to Docker Hub') {
                     ]
                 ]]
             ) {
+                sh 'echo "$username"'
                 // Login to Docker Registry and push the image
                 docker.withRegistry('', "${DOCKER_USERNAME}:${DOCKER_PASSWORD}") {
                     dockerImage.push()
