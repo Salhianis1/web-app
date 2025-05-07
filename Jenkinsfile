@@ -37,7 +37,7 @@ pipeline {
             }
         }*/
         
-        stage('Push Docker Image to Docker Hub') {
+stage('Push Docker Image to Docker Hub') {
     steps {
         script {
             // Fetch Docker credentials from Vault
@@ -61,6 +61,7 @@ pipeline {
         }
     }
 }
+
 
 
         stage('Run Container') {
