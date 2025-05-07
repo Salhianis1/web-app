@@ -1,5 +1,3 @@
-
-
 pipeline {
     agent any
 
@@ -25,46 +23,22 @@ pipeline {
             }
         }
 
-/*        stage('Push Docker Image to Docker Hub') {
+        stage('Push Docker Image to Docker Hub') {
             steps {
                 script {
-                    // Login to Docker Hub
-                    docker.withRegistry('', registryCredential) {
-                        // Push the Docker image to the registry
-                        dockerImage.push()
-                    }
-                }
-            }
-        }*/
-        
-stage('Push Docker Image to Docker Hub') {
-    steps {
-        script {
-            // Fetch Docker credentials from Vault
-            stages {
-        stage('Login to Docker Registry') {
-            steps {
-                script {
-                    // Retrieve Docker credentials from Vault
+                    // Fetch Docker credentials from Vault
                     withVault([vaultSecrets: [[path: "${env.VAULT_SECRET_PATH}", secretValues: [
                         [envVar: 'DOCKER_USERNAME', vaultKey: 'username'],
                         [envVar: 'DOCKER_PASSWORD', vaultKey: 'password']
                     ]]]]) {
-                        // Use the retrieved credentials in the docker.withRegistry block
+                        // Login to Docker Registry and push the image
                         docker.withRegistry('https://registry.hub.docker.com', "${DOCKER_USERNAME}:${DOCKER_PASSWORD}") {
-                            // Docker build or pull commands
-                            docker.build('my-image')
+                            dockerImage.push()
                         }
                     }
                 }
             }
         }
-    }
-        }
-    }
-}
-
-
 
         stage('Run Container') {
             steps {
