@@ -53,7 +53,7 @@ pipeline {
                 ]]
             ]) {
                 // Login to Docker Hub using credentials retrieved from Vault
-                docker.withRegistry('', [username: env.DOCKER_USERNAME, pwd: env.DOCKER_PASSWORD]) {
+                docker.withRegistry('https://index.docker.io/v1/', env.DOCKER_USERNAME, env.DOCKER_PASSWORD) {
                     // Push the Docker image to the registry
                     dockerImage.push()
                 }
