@@ -23,22 +23,34 @@ pipeline {
             }
         }
 
-        stage('Push Docker Image to Docker Hub') {
-            steps {
-                script {
-                    // Fetch Docker credentials from Vault
-                    withVault([vaultSecrets: [[path: "secret/dockercred}", secretValues: [
+stage('Push Docker Image to Docker Hub') {
+    steps {
+        script {
+            // Fetch Docker credentials from Vault
+            withVault(
+                configuration: [
+                    disableChildPoliciesOverride: false,
+                    timeout: 60,
+                    vaultCredentialId: 'vault-cred',
+                    vaultUrl: 'http://127.0.0.1:8200'
+                ],
+                vaultSecrets: [[
+                    path: 'secret/dockercred',
+                    secretValues: [
                         [envVar: 'DOCKER_USERNAME', vaultKey: 'username'],
-                        [envVar: 'DOCKER_PASSWORD', vaultKey: 'password']
-                    ]]]]) {
-                        // Login to Docker Registry and push the image
-                        docker.withRegistry('https://registry.hub.docker.com', "${DOCKER_USERNAME}:${DOCKER_PASSWORD}") {
-                            dockerImage.push()
-                        }
-                    }
+                        [envVar: 'DOCKER_PASSWORD', vaultKey: 'pwd']
+                    ]
+                ]]
+            ) {
+                // Login to Docker Registry and push the image
+                docker.withRegistry('https://registry.hub.docker.com', "${DOCKER_USERNAME}:${DOCKER_PASSWORD}") {
+                    dockerImage.push()
                 }
             }
         }
+    }
+}
+
 
         stage('Run Container') {
             steps {
